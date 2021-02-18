@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Web;
+﻿using System.Data.Entity;
 
 namespace webapi.Data
 {
@@ -14,10 +10,8 @@ namespace webapi.Data
         // automatically whenever you change your model schema, please use data migrations.
         // For more information refer to the documentation:
         // http://msdn.microsoft.com/en-us/data/jj591621.aspx
-    
-        public webapiContext() : base("name=webapiContext")
-        {
-        }
+
+        public webapiContext() : base(webapiConnectionStringBuilder.ConnectionString) { }
 
         public System.Data.Entity.DbSet<webapi.Models.Author> Authors { get; set; }
 
