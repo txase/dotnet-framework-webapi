@@ -4,7 +4,7 @@ Resources:
   SourceBundleBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-sourcebun-${AWS::AccountId}
+      BucketName: !Sub stackery-demo-dotnet-source-bundle-${AWS::AccountId}
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -33,7 +33,7 @@ Resources:
   SourceBundleUploader:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-SourceBundleUploader
+      FunctionName: stackery-demo-dotnet-SourceBundleUploader
       Description: Stackery Demo .NET Framework API Source Bundle Uploader
       CodeUri: SourceBundleUploader
       Handler: index.handler
@@ -253,9 +253,17 @@ Resources:
     Properties:
       RouteTableId: !Ref VirtualNetworkPublicSubnetsRouteTable
       SubnetId: !Ref VirtualNetworkPublicSubnet2
+  VirtualNetworkParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: Stackery Demo .NET VPC IDs
+      Name: /stackery-demo/dotnet/VirtualNetwork
+      Type: string
+      Value: !Sub '{"VpcId":"${VirtualNetwork}","DefaultPublicSubnetIds":["${VirtualNetworkPublicSubnet1}","${VirtualNetworkPublicSubnet2}"],"DefaultPrivateSubnetIds":["${VirtualNetworkPrivateSubnet1}","${VirtualNetworkPrivateSubnet2}"]}'
   Database:
     Type: AWS::RDS::DBInstance
     Properties:
+      DBInstanceIdentifier: stackery-demo-dotnet-database
       DBSubnetGroupName: !Ref DatabaseSubnetGroup
       Engine: sqlserver-ex
       MasterUsername: !Sub '{{resolve:secretsmanager:${DatabaseSAUserSecret}:SecretString:username}}'
@@ -300,16 +308,24 @@ Resources:
         GenerateStringKey: password
         PasswordLength: 16
         ExcludeCharacters: '"@/\'
-      Name: !Sub /stackery-demo/dotnet-webapi/Database/SAUser
+      Name: !Sub /stackery-demo/dotnet/Database/SAUser
   DatabaseSAUserSecretAttachment:
     Type: AWS::SecretsManager::SecretTargetAttachment
     Properties:
       SecretId: !Ref DatabaseSAUserSecret
       TargetId: !Ref Database
       TargetType: AWS::RDS::DBInstance
+  DatabaseParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: Stackery Demo .NET Database ARN
+      Name: /stackery-demo/dotnet/Database
+      Type: string
+      Value: !Sub arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:${%{resourceId}}
   Application:
     Type: AWS::ElasticBeanstalk::Application
     Properties:
+      ApplicationName: stackery-demo-dotnet-framework-api
       Description: Stackery Demo .NET Framework API
   ApplicationVersion:
     Type: AWS::ElasticBeanstalk::ApplicationVersion
@@ -349,6 +365,7 @@ Resources:
     Type: AWS::ElasticBeanstalk::Environment
     Properties:
       ApplicationName: !Ref Application
+      EnvironmentName: production
       Description: Stackery Demo .NET Framework API
       OptionSettings:
         - Namespace: aws:autoscaling:launchconfiguration
@@ -380,3 +397,10 @@ Resources:
         Name: WebServer
         Type: Standard
       VersionLabel: !Ref ApplicationVersion
+  ApplicationEnvironmentEndpointParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: Stackery Demo .NET Framework API Endpoint
+      Name: /stackery-demo/dotnet/Application/EndpointURL
+      Type: string
+      Value: !GetAtt ApplicationEnvironment.EndpointURL
