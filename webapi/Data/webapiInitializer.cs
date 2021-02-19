@@ -1,21 +1,13 @@
-﻿namespace webapi.Migrations
+﻿using System.Data.Entity;
+using System.Data.Entity.Migrations;
+using webapi.Models;
+
+namespace webapi.Data
 {
-    using System.Data.Entity.Migrations;
-    using webapi.Models;
-
-    internal sealed class Configuration : DbMigrationsConfiguration<webapi.Data.webapiContext>
+    public class webapiInitializer : CreateDatabaseIfNotExists<webapiContext>
     {
-        public Configuration()
+        protected override void Seed(webapiContext context)
         {
-            AutomaticMigrationsEnabled = false;
-        }
-
-        protected override void Seed(webapi.Data.webapiContext context)
-        {
-            //  This method will be called after migrating to the latest version.
-
-            //  You can use the DbSet<T>.AddOrUpdate() helper extension method
-            //  to avoid creating duplicate seed data.
             context.Authors.AddOrUpdate(
                 x => x.Id,
                 new Author() { Id = 1, Name = "Jane Austen" },
@@ -60,7 +52,10 @@
                     Price = 8.95M,
                     Genre = "Picaresque"
                 }
-                );
+            );
+
+            context.SaveChanges();
+            base.Seed(context);
         }
     }
 }
