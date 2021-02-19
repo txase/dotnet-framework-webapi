@@ -308,7 +308,7 @@ Resources:
         GenerateStringKey: password
         PasswordLength: 16
         ExcludeCharacters: '"@/\'
-      Name: !Sub /stackery-demo/dotnet/Database/SAUser
+      Name: /stackery-demo/dotnet/Database/SAUser
   DatabaseSAUserSecretAttachment:
     Type: AWS::SecretsManager::SecretTargetAttachment
     Properties:
@@ -321,7 +321,7 @@ Resources:
       Description: Stackery Demo .NET Database ARN
       Name: /stackery-demo/dotnet/Database
       Type: string
-      Value: !Sub arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:${%{resourceId}}
+      Value: !Sub arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:${Database}
   Application:
     Type: AWS::ElasticBeanstalk::Application
     Properties:
