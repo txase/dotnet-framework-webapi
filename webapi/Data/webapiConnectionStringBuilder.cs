@@ -29,14 +29,14 @@ namespace webapi.Data
             var client = new AmazonSecretsManagerClient();
             var response = client.GetSecretValue(new GetSecretValueRequest
             {
-                SecretId = "arn:aws:secretsmanager:us-east-1:394493744367:secret:/stackery-demo/dotnet-webapi/Database/SAUser-c7o175" //Environment.GetEnvironmentVariable("DATABASE_CREDENTIALS_SECRET_ARN")
+                SecretId = Environment.GetEnvironmentVariable("DATABASE_CREDENTIALS_SECRET_ARN")
             });
 
             var credentials = JsonConvert.DeserializeObject<Credentials>(response.SecretString);
 
             var builder = new SqlConnectionStringBuilder
             {
-                DataSource = "ddr2zfjrb5uzfv.cll8zwl89swl.us-east-1.rds.amazonaws.com", //Environment.GetEnvironmentVariable("DB_ADDRESS"),
+                DataSource = Environment.GetEnvironmentVariable("DB_ADDRESS"),
                 UserID = credentials.username,
                 Password = credentials.password,
                 InitialCatalog = "books"
