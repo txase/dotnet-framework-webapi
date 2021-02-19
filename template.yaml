@@ -1,57 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Transform: AWS::Serverless-2016-10-31
 Resources:
-  SourceBundleBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub stackery-demo-dotnet-source-bundle-${AWS::AccountId}
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: aws:kms
-              KMSMasterKeyID: alias/aws/s3
-      PublicAccessBlockConfiguration:
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-  SourceBundleBucketBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref SourceBundleBucket
-      PolicyDocument:
-        Id: RequireEncryptionInTransit
-        Version: '2012-10-17'
-        Statement:
-          - Principal: '*'
-            Action: '*'
-            Effect: Deny
-            Resource:
-              - !GetAtt SourceBundleBucket.Arn
-              - !Sub ${SourceBundleBucket.Arn}/*
-            Condition:
-              Bool:
-                aws:SecureTransport: 'false'
-  SourceBundleUploader:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: stackery-demo-dotnet-SourceBundleUploader
-      Description: Stackery Demo .NET Framework API Source Bundle Uploader
-      CodeUri: SourceBundleUploader
-      Handler: index.handler
-      Runtime: nodejs12.x
-      MemorySize: 3008
-      Timeout: 30
-      Tracing: Active
-      Policies:
-        - S3CrudPolicy:
-            BucketName: !Ref SourceBundleBucket
-      Environment:
-        Variables:
-          BUCKET_NAME: !Ref SourceBundleBucket
-          BUCKET_ARN: !GetAtt SourceBundleBucket.Arn
-  SourceBundleUploaderDeployTrigger:
-    Type: Custom::FunctionDeployTrigger
-    Properties:
-      ServiceToken: !GetAtt SourceBundleUploader.Arn
   VirtualNetwork:
     Type: AWS::EC2::VPC
     Properties:
@@ -333,8 +281,8 @@ Resources:
       ApplicationName: !Ref Application
       Description: Stackery Demo .NET Framework API
       SourceBundle:
-        S3Bucket: !Ref SourceBundleBucket
-        S3Key: !Ref SourceBundleUploaderDeployTrigger
+        S3Bucket: stackery-public-assets-us-west-2
+        S3Key: demo/dotnet-framework-api/app.zip
   ApplicationInstanceRole:
     Type: AWS::IAM::Role
     Properties:
