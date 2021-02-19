@@ -332,6 +332,14 @@ Resources:
       Description: Stackery Demo .NET Framework API Elastic Beanstalk Instance Role
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier
+      Policies:
+        - PolicyName: ReadDatabaseSAUserSecret
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref DatabaseSAUserSecret
   ApplicationInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
