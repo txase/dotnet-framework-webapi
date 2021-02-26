@@ -26,9 +26,10 @@ namespace webapi.Data
         static webapiConnectionStringBuilder()
         {
             var client = new AmazonSecretsManagerClient();
-            var response = client.GetSecretValue(new GetSecretValueRequest{SecretId = Environment.GetEnvironmentVariable("DATABASE_CREDENTIALS_SECRET_ARN")});
+            var responseTask = client.GetSecretValueAsync(new GetSecretValueRequest{SecretId = $"{Environment.GetEnvironmentVariable("SECRETS_NAMESPACE")}dotnet/Database/SAUser"});
+            var response = responseTask.GetAwaiter().GetResult();
             var credentials = JsonConvert.DeserializeObject<Credentials>(response.SecretString);
-            var builder = new SqlConnectionStringBuilder{DataSource = Environment.GetEnvironmentVariable("DATABASE_ADDRESS"), UserID = credentials.username, Password = credentials.password, InitialCatalog = "books"};
+            var builder = new SqlConnectionStringBuilder{DataSource = Environment.GetEnvironmentVariable("DB_ADDRESS"), UserID = credentials.username, Password = credentials.password, InitialCatalog = "books"};
             _connectionString = builder.ToString();
         }
     }
