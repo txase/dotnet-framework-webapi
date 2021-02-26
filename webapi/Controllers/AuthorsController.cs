@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
@@ -11,13 +10,15 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using webapi.Data;
 using webapi.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 namespace webapi.Controllers
 {
-    public class AuthorsController : ApiController
+    [ApiController]
+    public class AuthorsController : ControllerBase
     {
         private webapiContext db = new webapiContext();
-
         // GET: api/Authors
         public IQueryable<Author> GetAuthors()
         {
@@ -52,7 +53,6 @@ namespace webapi.Controllers
             }
 
             db.Entry(author).State = EntityState.Modified;
-
             try
             {
                 await db.SaveChangesAsync();
@@ -83,8 +83,12 @@ namespace webapi.Controllers
 
             db.Authors.Add(author);
             await db.SaveChangesAsync();
+            return CreatedAtRoute("DefaultApi", new
+            {
+            id = author.Id
+            }
 
-            return CreatedAtRoute("DefaultApi", new { id = author.Id }, author);
+            , author);
         }
 
         // DELETE: api/Authors/5
@@ -99,7 +103,6 @@ namespace webapi.Controllers
 
             db.Authors.Remove(author);
             await db.SaveChangesAsync();
-
             return Ok(author);
         }
 
@@ -109,6 +112,7 @@ namespace webapi.Controllers
             {
                 db.Dispose();
             }
+
             base.Dispose(disposing);
         }
 
