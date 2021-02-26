@@ -36,7 +36,7 @@ namespace webapi.Data
 
             var builder = new SqlConnectionStringBuilder
             {
-                DataSource = Environment.GetEnvironmentVariable("DB_ADDRESS"),
+                DataSource = Environment.GetEnvironmentVariable("DATABASE_ADDRESS"),
                 UserID = credentials.username,
                 Password = credentials.password,
                 InitialCatalog = "books"
