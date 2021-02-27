@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
@@ -11,18 +10,19 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using webapi.Data;
 using webapi.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 namespace webapi.Controllers
 {
-    public class BooksController : ApiController
+    [ApiController]
+    public class BooksController : ControllerBase
     {
         private webapiContext db = new webapiContext();
-
         // GET: api/Books
         public IQueryable<Book> GetBooks()
         {
-            return db.Books
-                .Include(b => b.Author);
+            return db.Books.Include(b => b.Author);
         }
 
         // GET: api/Books/5
@@ -53,7 +53,6 @@ namespace webapi.Controllers
             }
 
             db.Entry(book).State = EntityState.Modified;
-
             try
             {
                 await db.SaveChangesAsync();
@@ -84,8 +83,12 @@ namespace webapi.Controllers
 
             db.Books.Add(book);
             await db.SaveChangesAsync();
+            return CreatedAtRoute("DefaultApi", new
+            {
+            id = book.Id
+            }
 
-            return CreatedAtRoute("DefaultApi", new { id = book.Id }, book);
+            , book);
         }
 
         // DELETE: api/Books/5
@@ -100,7 +103,6 @@ namespace webapi.Controllers
 
             db.Books.Remove(book);
             await db.SaveChangesAsync();
-
             return Ok(book);
         }
 
@@ -110,6 +112,7 @@ namespace webapi.Controllers
             {
                 db.Dispose();
             }
+
             base.Dispose(disposing);
         }
 
