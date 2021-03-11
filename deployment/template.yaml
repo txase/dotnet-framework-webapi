@@ -1,4 +1,48 @@
 AWSTemplateFormatVersion: 2010-09-09
+Mappings:
+  RegionSettings:
+    af-south-1:
+      EC2FreeTierInstanceType: t3.micro
+    ap-east-1:
+      EC2FreeTierInstanceType: t3.micro
+    ap-northeast-1:
+      EC2FreeTierInstanceType: t2.micro
+    ap-northeast-2:
+      EC2FreeTierInstanceType: t2.micro
+    ap-northeast-3:
+      EC2FreeTierInstanceType: t2.micro
+    ap-south-1:
+      EC2FreeTierInstanceType: t2.micro
+    ap-southeast-1:
+      EC2FreeTierInstanceType: t2.micro
+    ap-southeast-2:
+      EC2FreeTierInstanceType: t2.micro
+    ca-central-1:
+      EC2FreeTierInstanceType: t2.micro
+    eu-central-1:
+      EC2FreeTierInstanceType: t2.micro
+    eu-north-1:
+      EC2FreeTierInstanceType: t3.micro
+    eu-south-1:
+      EC2FreeTierInstanceType: t3.micro
+    eu-west-1:
+      EC2FreeTierInstanceType: t2.micro
+    eu-west-2:
+      EC2FreeTierInstanceType: t2.micro
+    eu-west-3:
+      EC2FreeTierInstanceType: t2.micro
+    me-south-1:
+      EC2FreeTierInstanceType: t3.micro
+    sa-east-1:
+      EC2FreeTierInstanceType: t2.micro
+    us-east-1:
+      EC2FreeTierInstanceType: t2.micro
+    us-east-2:
+      EC2FreeTierInstanceType: t2.micro
+    us-west-1:
+      EC2FreeTierInstanceType: t2.micro
+    us-west-2:
+      EC2FreeTierInstanceType: t2.micro
 Resources:
   VirtualNetwork:
     Type: AWS::EC2::VPC
@@ -321,7 +365,10 @@ Resources:
           Value: !Ref ApplicationInstanceProfile
         - Namespace: aws:ec2:instances
           OptionName: InstanceTypes
-          Value: t3a.micro
+          Value: !FindInMap
+            - RegionSettings
+            - !Ref AWS::Region
+            - EC2FreeTierInstanceType
         - Namespace: aws:ec2:vpc
           OptionName: VPCId
           Value: !Ref VirtualNetwork
