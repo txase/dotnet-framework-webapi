@@ -277,8 +277,8 @@ Resources:
       ApplicationName: !Ref Application
       Description: Stackery Demo .NET Framework API
       SourceBundle:
-        S3Bucket: stackery-public-assets-us-west-2
-        S3Key: demo/dotnet-framework-api/app.zip
+        S3Bucket: !Sub stackery-public-assets-${AWS::Region}
+        S3Key: regional/demo/dotnet-framework-api/app.zip
   ApplicationInstanceRole:
     Type: AWS::IAM::Role
     Properties:
