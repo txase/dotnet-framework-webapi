@@ -48,6 +48,7 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 192.168.237.0/24
+      EnableDnsHostnames: true
       Tags:
         - Key: Name
           Value: Stackery Demo .NET API
@@ -125,80 +126,6 @@ Resources:
         - Key: Name
           Value: Stackery Demo .NET API Public 2
       VpcId: !Ref VirtualNetwork
-  VirtualNetworkPrivateSubnet1NatGatewayEIP:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: vpc
-  VirtualNetworkPrivateSubnet1NatGateway:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt VirtualNetworkPrivateSubnet1NatGatewayEIP.AllocationId
-      SubnetId: !Ref VirtualNetworkPublicSubnet1
-  VirtualNetworkPrivateSubnet1RouteTable:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::RouteTable
-    Properties:
-      Tags:
-        - Key: Name
-          Value: Stackery Demo .NET API Private 1
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPrivateSubnet1NatGatewayRoute:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref VirtualNetworkPrivateSubnet1NatGateway
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet1RouteTable
-  VirtualNetworkPrivateSubnet1RouteTableAssociation:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet1RouteTable
-      SubnetId: !Ref VirtualNetworkPrivateSubnet1
-  VirtualNetworkPrivateSubnet2NatGatewayEIP:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: vpc
-  VirtualNetworkPrivateSubnet2NatGateway:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt VirtualNetworkPrivateSubnet2NatGatewayEIP.AllocationId
-      SubnetId: !Ref VirtualNetworkPublicSubnet2
-  VirtualNetworkPrivateSubnet2RouteTable:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::RouteTable
-    Properties:
-      Tags:
-        - Key: Name
-          Value: Stackery Demo .NET API Private 2
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPrivateSubnet2NatGatewayRoute:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref VirtualNetworkPrivateSubnet2NatGateway
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet2RouteTable
-  VirtualNetworkPrivateSubnet2RouteTableAssociation:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet2RouteTable
-      SubnetId: !Ref VirtualNetworkPrivateSubnet2
   VirtualNetworkPublicSubnetsInternetGateway:
     Metadata:
       StackeryManaged: true
@@ -245,6 +172,31 @@ Resources:
     Properties:
       RouteTableId: !Ref VirtualNetworkPublicSubnetsRouteTable
       SubnetId: !Ref VirtualNetworkPublicSubnet2
+  VirtualNetworkSecretsManagerEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref VirtualNetworkSecretsManagerEndpointSecurityGroup
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.secretsmanager
+      SubnetIds:
+        - !Ref VirtualNetworkPrivateSubnet1
+        - !Ref VirtualNetworkPrivateSubnet2
+      VpcEndpointType: Interface
+      VpcId: !Ref VirtualNetwork
+  VirtualNetworkSecretsManagerEndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: AWS Secrets Manager Endpoint Security Group
+      SecurityGroupIngress:
+        CidrIp: !GetAtt VirtualNetwork.CidrBlock
+        FromPort: 443
+        IpProtocol: tcp
+        ToPort: 443
+      Tags:
+        - Key: Name
+          Value: Stackery Demo .NET API AWS Secrets Manager Endpoint
+      VpcId: !Ref VirtualNetwork
   VirtualNetworkParameter:
     Type: AWS::SSM::Parameter
     Properties:
@@ -283,7 +235,7 @@ Resources:
     Properties:
       GroupDescription: Database Security Group
       SecurityGroupIngress:
-        CidrIp: 0.0.0.0/0
+        CidrIp: !GetAtt VirtualNetwork.CidrBlock
         FromPort: 1433
         IpProtocol: tcp
         ToPort: 1433
