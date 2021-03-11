@@ -350,4 +350,4 @@ Resources:
       Description: Stackery Demo .NET Framework API Endpoint
       Name: /stackery-demo/dotnet/Application/EndpointURL
       Type: String
-      Value: !Sub https://${ApplicationEnvironment.EndpointURL}
+      Value: !Sub http://${ApplicationEnvironment.EndpointURL}
