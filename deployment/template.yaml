@@ -331,10 +331,10 @@ Resources:
             - - !Ref VirtualNetworkPublicSubnet1
               - !Ref VirtualNetworkPublicSubnet2
         - Namespace: aws:elasticbeanstalk:application:environment
-          OptionName: DATABASE_ADDRESS
+          OptionName: DB_ADDRESS
           Value: !GetAtt Database.Endpoint.Address
         - Namespace: aws:elasticbeanstalk:application:environment
-          OptionName: DATABASE_CREDENTIALS_SECRET_ARN
+          OptionName: DB_CREDENTIALS_SECRET_ARN
           Value: !Ref DatabaseSAUserSecret
         - Namespace: aws:elasticbeanstalk:environment
           OptionName: EnvironmentType
