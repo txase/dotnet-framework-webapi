@@ -339,7 +339,7 @@ Resources:
         - Namespace: aws:elasticbeanstalk:environment
           OptionName: EnvironmentType
           Value: SingleInstance
-      SolutionStackName: 64bit Windows Server Core 2019 v2.6.3 running IIS 10.0
+      SolutionStackName: 64bit Windows Server Core 2019 v2.6.4 running IIS 10.0
       Tier:
         Name: WebServer
         Type: Standard
