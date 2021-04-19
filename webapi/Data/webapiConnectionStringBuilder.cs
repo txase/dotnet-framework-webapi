@@ -1,4 +1,4 @@
-using Amazon.SecretsManager;
+﻿using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
 using Newtonsoft.Json;
 using System;

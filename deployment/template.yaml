@@ -1,9 +1,54 @@
 AWSTemplateFormatVersion: 2010-09-09
+Mappings:
+  RegionSettings:
+    af-south-1:
+      EC2FreeTierInstanceType: t3.micro
+    ap-east-1:
+      EC2FreeTierInstanceType: t3.micro
+    ap-northeast-1:
+      EC2FreeTierInstanceType: t2.micro
+    ap-northeast-2:
+      EC2FreeTierInstanceType: t2.micro
+    ap-northeast-3:
+      EC2FreeTierInstanceType: t2.micro
+    ap-south-1:
+      EC2FreeTierInstanceType: t2.micro
+    ap-southeast-1:
+      EC2FreeTierInstanceType: t2.micro
+    ap-southeast-2:
+      EC2FreeTierInstanceType: t2.micro
+    ca-central-1:
+      EC2FreeTierInstanceType: t2.micro
+    eu-central-1:
+      EC2FreeTierInstanceType: t2.micro
+    eu-north-1:
+      EC2FreeTierInstanceType: t3.micro
+    eu-south-1:
+      EC2FreeTierInstanceType: t3.micro
+    eu-west-1:
+      EC2FreeTierInstanceType: t2.micro
+    eu-west-2:
+      EC2FreeTierInstanceType: t2.micro
+    eu-west-3:
+      EC2FreeTierInstanceType: t2.micro
+    me-south-1:
+      EC2FreeTierInstanceType: t3.micro
+    sa-east-1:
+      EC2FreeTierInstanceType: t2.micro
+    us-east-1:
+      EC2FreeTierInstanceType: t2.micro
+    us-east-2:
+      EC2FreeTierInstanceType: t2.micro
+    us-west-1:
+      EC2FreeTierInstanceType: t2.micro
+    us-west-2:
+      EC2FreeTierInstanceType: t2.micro
 Resources:
   VirtualNetwork:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 192.168.237.0/24
+      EnableDnsHostnames: true
       Tags:
         - Key: Name
           Value: Stackery Demo .NET API
@@ -81,80 +126,6 @@ Resources:
         - Key: Name
           Value: Stackery Demo .NET API Public 2
       VpcId: !Ref VirtualNetwork
-  VirtualNetworkPrivateSubnet1NatGatewayEIP:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: vpc
-  VirtualNetworkPrivateSubnet1NatGateway:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt VirtualNetworkPrivateSubnet1NatGatewayEIP.AllocationId
-      SubnetId: !Ref VirtualNetworkPublicSubnet1
-  VirtualNetworkPrivateSubnet1RouteTable:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::RouteTable
-    Properties:
-      Tags:
-        - Key: Name
-          Value: Stackery Demo .NET API Private 1
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPrivateSubnet1NatGatewayRoute:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref VirtualNetworkPrivateSubnet1NatGateway
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet1RouteTable
-  VirtualNetworkPrivateSubnet1RouteTableAssociation:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet1RouteTable
-      SubnetId: !Ref VirtualNetworkPrivateSubnet1
-  VirtualNetworkPrivateSubnet2NatGatewayEIP:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: vpc
-  VirtualNetworkPrivateSubnet2NatGateway:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt VirtualNetworkPrivateSubnet2NatGatewayEIP.AllocationId
-      SubnetId: !Ref VirtualNetworkPublicSubnet2
-  VirtualNetworkPrivateSubnet2RouteTable:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::RouteTable
-    Properties:
-      Tags:
-        - Key: Name
-          Value: Stackery Demo .NET API Private 2
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPrivateSubnet2NatGatewayRoute:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref VirtualNetworkPrivateSubnet2NatGateway
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet2RouteTable
-  VirtualNetworkPrivateSubnet2RouteTableAssociation:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet2RouteTable
-      SubnetId: !Ref VirtualNetworkPrivateSubnet2
   VirtualNetworkPublicSubnetsInternetGateway:
     Metadata:
       StackeryManaged: true
@@ -201,6 +172,31 @@ Resources:
     Properties:
       RouteTableId: !Ref VirtualNetworkPublicSubnetsRouteTable
       SubnetId: !Ref VirtualNetworkPublicSubnet2
+  VirtualNetworkSecretsManagerEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref VirtualNetworkSecretsManagerEndpointSecurityGroup
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.secretsmanager
+      SubnetIds:
+        - !Ref VirtualNetworkPrivateSubnet1
+        - !Ref VirtualNetworkPrivateSubnet2
+      VpcEndpointType: Interface
+      VpcId: !Ref VirtualNetwork
+  VirtualNetworkSecretsManagerEndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: AWS Secrets Manager Endpoint Security Group
+      SecurityGroupIngress:
+        CidrIp: !GetAtt VirtualNetwork.CidrBlock
+        FromPort: 443
+        IpProtocol: tcp
+        ToPort: 443
+      Tags:
+        - Key: Name
+          Value: Stackery Demo .NET API AWS Secrets Manager Endpoint
+      VpcId: !Ref VirtualNetwork
   VirtualNetworkParameter:
     Type: AWS::SSM::Parameter
     Properties:
@@ -239,7 +235,7 @@ Resources:
     Properties:
       GroupDescription: Database Security Group
       SecurityGroupIngress:
-        CidrIp: 0.0.0.0/0
+        CidrIp: !GetAtt VirtualNetwork.CidrBlock
         FromPort: 1433
         IpProtocol: tcp
         ToPort: 1433
@@ -281,8 +277,8 @@ Resources:
       ApplicationName: !Ref Application
       Description: Stackery Demo .NET Framework API
       SourceBundle:
-        S3Bucket: stackery-public-assets-us-west-2
-        S3Key: demo/dotnet-framework-api/app.zip
+        S3Bucket: !Sub stackery-public-assets-${AWS::Region}
+        S3Key: regional/demo/dotnet-framework-api/app.zip
   ApplicationInstanceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -321,7 +317,10 @@ Resources:
           Value: !Ref ApplicationInstanceProfile
         - Namespace: aws:ec2:instances
           OptionName: InstanceTypes
-          Value: t3a.micro
+          Value: !FindInMap
+            - RegionSettings
+            - !Ref AWS::Region
+            - EC2FreeTierInstanceType
         - Namespace: aws:ec2:vpc
           OptionName: VPCId
           Value: !Ref VirtualNetwork
@@ -332,15 +331,15 @@ Resources:
             - - !Ref VirtualNetworkPublicSubnet1
               - !Ref VirtualNetworkPublicSubnet2
         - Namespace: aws:elasticbeanstalk:application:environment
-          OptionName: DATABASE_ADDRESS
+          OptionName: DB_ADDRESS
           Value: !GetAtt Database.Endpoint.Address
         - Namespace: aws:elasticbeanstalk:application:environment
-          OptionName: DATABASE_CREDENTIALS_SECRET_ARN
+          OptionName: DB_CREDENTIALS_SECRET_ARN
           Value: !Ref DatabaseSAUserSecret
         - Namespace: aws:elasticbeanstalk:environment
           OptionName: EnvironmentType
           Value: SingleInstance
-      SolutionStackName: 64bit Windows Server Core 2019 v2.6.3 running IIS 10.0
+      SolutionStackName: 64bit Windows Server Core 2019 v2.6.4 running IIS 10.0
       Tier:
         Name: WebServer
         Type: Standard
@@ -351,4 +350,4 @@ Resources:
       Description: Stackery Demo .NET Framework API Endpoint
       Name: /stackery-demo/dotnet/Application/EndpointURL
       Type: String
-      Value: !Sub https://${ApplicationEnvironment.EndpointURL}
+      Value: !Sub http://${ApplicationEnvironment.EndpointURL}
